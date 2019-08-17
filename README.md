@@ -11,7 +11,6 @@ When building with Gatsby, you access your data through a query language named G
 }
 ```
 ```json
-Copycopy code to clipboard
 {
   "site": {
     "siteMetadata": {
