@@ -5,6 +5,18 @@ module.exports = {
     author: `@gatsbyjs`,
   },
   plugins: [
+    "gatsby-plugin-sharp",
+    "gatsby-transformer-sharp",
+    {
+      resolve: `gatsby-transformer-remark`,
+      options: {
+        commonmark: true, // CommonMark mode (default: true)
+        footnotes: true, // Footnotes mode (default: true)
+        pedantic: true, // Pedantic mode (default: true)
+        gfm: true, // GitHub Flavored Markdown mode (default: true)
+        plugins: [] // Plugins configs
+      },
+    },
     `gatsby-plugin-react-helmet`,
     {
       resolve: `gatsby-source-filesystem`,
@@ -13,8 +25,13 @@ module.exports = {
         path: `${__dirname}/src/images`,
       },
     },
-    `gatsby-transformer-sharp`,
-    `gatsby-plugin-sharp`,
+    {
+      resolve: "gatsby-source-filesystem",
+      options: {
+        path: "./data/",
+      },
+    },
+    "gatsby-transformer-json",
     {
       resolve: `gatsby-plugin-manifest`,
       options: {
