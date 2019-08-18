@@ -307,6 +307,15 @@ const Product = ({ data }) => {
 }
 export default Product
 ```
+A few notes about this file:
+* The result of the query is added to the template component as the data prop.
+* The image path was automatically converted by the Sharp transformer into a “child node” that includes optimized versions of the image.
+* The query uses a `[GraphQL fragment](https://www.gatsbyjs.org/packages/gatsby-image/)` to query all the required data for optimized images. GraphQL fragments do not work in the GraphQL Playground.
+* The img tag has been swapped out for a gatsby-image component named Image. Instead of a src attribute, it accepts an object with optimized image data.
+
+After the initial setup, loading data with GraphQL is fairly similar to directly loading JSON, but **it provides extra benefits like automatically optimizing images and keeping the data loading in the same place where it’s used.**
+
+GraphQL is certainly not required, but the benefits of adopting GraphQL are significant. **GraphQL will simplify the process of building and optimizing your pages**, so it’s considered a best practice for structuring and writing Gatsby applications.
 
 
 ## Reference
