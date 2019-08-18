@@ -180,6 +180,7 @@ This gets the job done, but it has a few shortcomings that are going to get more
 - The images are unoptimized, and any optimization you do would have to be manual.
 - To create a preview listing of all products, we’d need to pass all of the product info in `context`, which will get unweildy as the number of products increases.
 - It’s not very obvious where data is coming from in the templates that render the pages, so updating the data might be confusing later.
+
 **To overcome these limitations, Gatsby introduces GraphQL as a data management layer.**
 
 ### 1-4. Create pages using GraphQL
@@ -234,7 +235,78 @@ You can explore the available data schema using the “Docs” tab at the right.
 Test this query by entering it into the left-hand panel of the `[GraphQL Playground](https://github.com/prisma/graphql-playground)`, then pressing the play button in the top center.
 
 
+### 1-5. Generate pages with GraphQL
+In gatsby-node.js, we can use the GraphQL query we just wrote to generate pages.
+```js
+// gatsby-node.js
+exports.createPages = async ({ actions: { createPage }, graphql }) => {
+  const results = await graphql(`
+    {
+      allProductsJson {
+        edges {
+          node {
+            slug
+          }
+        }
+      }
+    }
+  `)
+  results.data.allProductsJson.edges.forEach(edge => {
+    const product = edge.node
+    createPage({
+      path: `/gql/${product.slug}/`,
+      component: require.resolve("./src/templates/product-graphql.js"),
+      context: {
+        slug: product.slug,
+      },
+    })
+  })
+}
+```
+You need to use the graphql helper that’s available to the `createPages` Node API to execute the query. To make sure that the result of the query comes back before continuing, use `async`/`await`.
 
+The results that come back are very similar to the contents of data/products.json, so you can loop through the results and create a page for each. However, **note that you’re only passing the slug in context — you’ll use this in the template component to load more product data.**
+
+As you’ve already seen, the context argument is made available to the template component in the pageContext prop. To make queries more powerful, Gatsby also exposes everything in context as a GraphQL variable, which means you can write a query that says, in plain English, “Load data for the product with the slug passed in context.”
+
+```jsx
+// src/templates/product-graphql.js
+import React from "react"
+import { graphql } from "gatsby"
+import Image from "gatsby-image"
+export const query = graphql`
+  query($slug: String!) {
+    productsJson(slug: { eq: $slug }) {
+      title
+      description
+      price
+      image {
+        childImageSharp {
+          fluid {
+            ...GatsbyImageSharpFluid
+          }
+        }
+      }
+    }
+  }
+`
+const Product = ({ data }) => {
+  const product = data.productsJson
+  return (
+    <div>
+      <h1>{product.title}</h1>
+      <Image
+        fluid={product.image.childImageSharp.fluid}
+        alt={product.title}
+        style={{ float: "left", marginRight: "1rem", width: 150 }}
+      />
+      <p>{product.price}</p>
+      <div dangerouslySetInnerHTML={{ __html: product.description }} />
+    </div>
+  )
+}
+export default Product
+```
 
 
 ## Reference
