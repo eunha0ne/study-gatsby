@@ -318,6 +318,43 @@ After the initial setup, loading data with GraphQL is fairly similar to directly
 GraphQL is certainly not required, but the benefits of adopting GraphQL are significant. **GraphQL will simplify the process of building and optimizing your pages**, so it’s considered a best practice for structuring and writing Gatsby applications.
 
 
+## 2. Understanding GraphQL Syntax
+
+### 2-1. Basic query
+
+Let’s start with the basics, pulling up the site `title` from your `gatsby-config.js`’s `siteMetaData`:
+```
+{
+  site {
+    siteMetadata {
+      title
+    }
+  }
+}
+```
+When typing in the query editor you can use `Ctrl + Space` to see autocomplete options and `Ctrl + Enter` to run the current query.
+
+### 2-2. A longer query
+
+Gatsby structures its content as collections of nodes, which are connected to each other with `edges`. In this query you ask for the total count of plugins in this Gatsby site, along with specific information about each one.
+```
+{
+  allSitePlugin {
+    totalCount
+    edges {
+      node {
+        name
+        version
+        packageJson {
+          description
+        }
+      }
+    }
+  }
+}
+```
+
+
 ## Reference
 
 - [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
