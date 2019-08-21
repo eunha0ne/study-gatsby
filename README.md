@@ -336,7 +336,7 @@ When typing in the query editor you can use `Ctrl + Space` to see autocomplete o
 
 ### 2-2. A longer query
 
-Gatsby structures its content as collections of nodes, which are connected to each other with `edges`. In this query you ask for the total count of plugins in this Gatsby site, along with specific information about each one.
+**Gatsby structures its content as collections of nodes, which are connected to each other with `edges`**. In this query you ask for the total count of plugins in this Gatsby site, along with specific information about each one.
 ```
 {
   allSitePlugin {
@@ -354,7 +354,207 @@ Gatsby structures its content as collections of nodes, which are connected to ea
 }
 ```
 
+### 2-3. Limit
+
+There are several ways to reduce the number of results from a query. Here totalCount tells you there’s 8 results, but `limit` is used to show only the first three.
+```
+{
+  allMarkdownRemark(limit: 3) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+```
+
+### 2-4. Skip
+
+Skip over a number of results. In this query `skip` is used to omit the first 3 results.
+```
+{
+  allMarkdownRemark(skip: 1) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+```
+
+### 2-5. Filter 
+
+In this query `filter` and the `ne(not equals)` operator is used to show only results that have a title. [A good video tutorial](https://www.youtube.com/watch?v=Lg1bom99uGM) on this is here.
+```
+{
+  allMarkdownRemark(
+    filter: {
+      frontmatter: {title: {ne: ""}}
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+```
+Gatsby relies on [Sift](https://www.npmjs.com/package/sift) to enable MongoDB-like query syntax for object filtering. This allows Gatsby to support operators like `eq`, `ne`, `in`, `regex` and querying nested fields through the `__` connector. 
+
+It is also possible to filter on multiple fields - just separate the individual filters by a comma (works as an AND):
+```js
+filter: { contentType: { in: ["post", "page"] }, draft: { eq: false } }
+```
+
+(1) In this query the fields `categories` and `title` are filtered to find the book that has Fantastic in its title and belongs to the magical creatures category. (2) And you can also combine the mentioned operators. This query filters on `/History/` for the `regex` operator. The result is Hogwarts: A History and History of Magic. You can filter out the latter with the `ne` operator.
+```
+# example: 1
+{
+  allMarkdownRemark(
+    filter: {
+      frontmatter: {
+        categories: {
+          in: ["magical creatures"]
+        }
+        title: {regex: "/Fantastic/"
+        }
+      }
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+
+# example: 2
+{
+  allMarkdownRemark(
+    filter: {
+      frontmatter: {
+        title: {
+          regex: "/History/"
+          ne: "History of Magic"
+        }
+      }
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+```
+
+### 2-6. Complete list of possible operators
+* eq: short for equal, must match the given data exactly
+* ne: short for not equal, must be different from the given data
+* regex: short for regular expression, must match the given pattern. **Note that backslashes need to be escaped twice**, so `/\w+/` needs to be written as `"/\\\\w+/"`.
+* glob: short for global, allows to use wildcard `*` which acts as a placeholder for any non-empty string
+* in: short for in array, must be an element of the array
+* nin: short for not in array, must NOT be an element of the array
+* gt: short for greater than, must be greater than given value
+* gte: short for greater than or equal, must be greater than or equal to given value
+* lt: short for less than, must be less than given value
+* lte: short for less than or equal, must be less than or equal to given value
+* elemMatch: short for element match, this indicates that the field you are filtering will return an array of elements, on which you can apply a filter using the previous operators
+
+### 2-7. Sort
+The ordering of your results can be specified with `sort`. Here the results are sorted in ascending order of `frontmatter`’s `date` field.
+```
+{
+  allMarkdownRemark(
+    sort: {
+      fields: [frontmatter___date]
+      order: ASC
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+          date
+        }
+      }
+    }
+  }
+}
+
+```
+
+```
+# example: 1
+{
+  allMarkdownRemark(
+    sort: {
+      fields: [frontmatter___date, frontmatter___title]
+      order: ASC
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+          date
+        }
+      }
+    }
+  }
+}
+
+# example: 2
+{
+  allMarkdownRemark(
+    sort: {
+      fields: [frontmatter___date, frontmatter___title]
+      order: [ASC, DESC]
+    }
+  ) {
+    totalCount
+    edges {
+      node {
+        frontmatter {
+          title
+          date
+        }
+      }
+    }
+  }
+}
+
+```
+(1) You can also sort on multiple fields but the `sort` keyword can only be used once. The second sort field gets evaluated when the first field (here: date) is identical. The results of the following query are sorted in ascending order of date and title field.
+
+Children's Anthology of Monsters and Break with Banshee both have the same date (1992-01-02) but in the first query (only one sort field) the latter comes after the first. The additional sorting on the title puts Break with Banshee in the right order.
+
+By default, sort fields will be sorted in ascending order. Optionally, you can specify a sort order per field by providing an array of `ASC (for ascending)` or `DESC (for descending)` values. (2) For example, to sort by frontmatter.date in ascending order, and additionally by frontmatter.title in descending order, you would use sort: { fields: [frontmatter___date, frontmatter___title], order: [ASC, DESC] }. Note that if you only provide a single sort order value, this will affect the first sort field only, the rest will be sorted in default ascending order.
+
+
 
 ## Reference
 
-- [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
+* [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
