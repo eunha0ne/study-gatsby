@@ -21,9 +21,9 @@
     * Excerpt
   * [Sort, filter, limit & format together](#2-9-Sort-filter-limit-&-format-together)
   * [Query variables](#2-10-Query-variables)
-  * [Group](#Group)
-  * [Fragments](#Fragments)
-  * [Aliasing](#Aliasing)
+  * [Group](#2-11-Group)
+  * [Fragments](#2-12-Fragments)
+  * [Aliasing](#2-13-Aliasing)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
