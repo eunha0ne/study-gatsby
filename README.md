@@ -1,5 +1,22 @@
 # GraphQL and Gatsby
 
+> Gatsby의 GraphQL 문서를 정리한 내용을 담고 있습니다.
+
+* [Why Gatsby uses GraphQL](#1-why-gatsby-uses-graphql)
+  * [Create a page without any data](#1-1-create-a-page-without-any-data)
+  * [Create a page with hard-coded data](#1-2-create-a-page-with-hard-coded-data)
+  * [Create pages from JSON with images](#1-3-create-pages-from-json-with-images)
+  * [Create pages using GraphQL](#1-4-create-pages-using-graphql)
+  * [Generate pages with GraphQL](#1-5-generate-pages-with-graphql)
+* [Understanding GraphQL Syntax](#2-understanding-graphql-syntax)
+  * [Basic query](#2-1-Basic-query)
+  * [A longer query](#2-2-A-longer-query)
+  * [Limit](#2-3-Limit)
+  * [Skip](#2-4-Skip)
+  * [Filter](#2-5-Filter)
+  * [Comple list of possible operators](#2-6-Comple-list-of-possible-operators)
+  * [Sort](#2-7-Sort)
+
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
 ```javascript
@@ -24,12 +41,12 @@ When building with Gatsby, you access your data through a query language named G
 
 Notice how the query signature exactly matches the returned JSON signature. This is possible because in GraphQL, **you query against a `schema` that is the representation of your available data.** Don’t worry about where the schema comes from right now, Gatsby takes care of organizing all of your data for you and making it discoverable with a tool called `GraphiQL`.
 
-- 1. run queries against your data in the browser
-- 2. dig into the structure of data available to you through a data type explorer.
+1. run queries against your data in the browser
+2. dig into the structure of data available to you through a data type explorer.
 
 ## 1. Why Gatsby uses GraphQL
 
-### 1-1. Create a page without any data
+### 1-1 Create a page without any data
 
 A common question about Gatsby is, “Why does Gatsby use GraphQL? Doesn’t it generate static files?”
 
