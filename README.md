@@ -16,6 +16,14 @@
   * [Filter](#2-5-Filter)
   * [Comple list of possible operators](#2-6-Comple-list-of-possible-operators)
   * [Sort](#2-7-Sort)
+  * [Format](#2-8-Format)
+    * Date
+    * Excerpt
+  * [Sort, filter, limit & format together](#2-9-Sort-filter-limit-&-format-together)
+  * [Query variables](#2-10-Query-variables)
+  * [Group](#Group)
+  * [Fragments](#Fragments)
+  * [Aliasing](#Aliasing)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -570,7 +578,183 @@ Children's Anthology of Monsters and Break with Banshee both have the same date 
 
 By default, sort fields will be sorted in ascending order. Optionally, you can specify a sort order per field by providing an array of `ASC (for ascending)` or `DESC (for descending)` values. (2) For example, to sort by frontmatter.date in ascending order, and additionally by frontmatter.title in descending order, you would use sort: { fields: [frontmatter___date, frontmatter___title], order: [ASC, DESC] }. Note that if you only provide a single sort order value, this will affect the first sort field only, the rest will be sorted in default ascending order.
 
+### 2-8. Format
+#### Date
+Dates can be formatted using the `formatString` function.
+```
+{
+  allMarkdownRemark(
+    filter: {frontmatter: {date: {ne: null}}}
+  ) {
+    edges {
+      node {
+        frontmatter {
+          title
+          date(
+            formatString: "dddd DD MMMM YYYY" // "Wednesday 01 January 1992"
+            locale: "de-DE" // or "ko"
+          ) 
+        }
+      }
+    }
+  }
+}
 
+```
+You can also pass in a `locale` to adapt the output to your language. The above query gives you the english output for the weekdays, this example outputs them in german. See [moment.js documentation](https://momentjs.com/docs/#/displaying/format/) for more tokens.
+
+Dates also accept the `fromNow` and `difference` function. The former returns a string generated with Moment.js’ fromNow function, the latter returns the difference between the date and current time (using Moment.js’ difference function).
+
+#### Excerpt
+
+Excerpts accept three options: `pruneLength`, `truncate`, and `format`. `format` can be `PLAIN` or `HTML`.
+```
+{
+  allMarkdownRemark(
+    filter: {frontmatter: {date: {ne: null}}}
+    limit: 5
+  ) {
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+        excerpt(
+          format: PLAIN
+          pruneLength: 200
+          truncate: true
+        )
+      }
+    }
+  }
+}
+
+```
+
+### 2-9. Sort, filter, limit & format together
+
+This query combines sorting, filtering, limiting and formatting together.
+```
+{
+  allMarkdownRemark(
+    limit: 3
+    filter: { frontmatter: { date: { ne: null } } }
+    sort: { fields: [frontmatter___date], order: DESC }
+  ) {
+    edges {
+      node {
+        frontmatter {
+          title
+          date(formatString: "dddd DD MMMM YYYY")
+        }
+      }
+    }
+  }
+}
+```
+
+### 2-10. Query variables
+
+In addition to adding query arguments directly to queries, **GraphQL allows to pass in “query variables”. These can be both simple scalar values as well as objects.** The query below is the same one as the previous example, but with the input arguments passed in as “query variables”.
+
+To add variables to page component queries, pass these in the `context` object when creating pages.
+```
+query GetBlogPosts(
+  $limit: Int, $filter: MarkdownRemarkFilterInput, $sort: MarkdownRemarkSortInput
+) {
+	allMarkdownRemark(
+    limit: $limit,
+    filter: $filter,
+    sort: $sort
+  ) {
+    edges {
+      node {
+        frontmatter {
+          title
+          date(formatString: "dddd DD MMMM YYYY")
+        }
+      }
+    }
+  }
+}
+```
+
+### 2-11. Group
+
+**You can also group values on the basis of a field** e.g. the title, date or category and get the field value, the total number of occurrences and edges.
+
+The query below gets us all categories (fieldValue) applied to a book and how many books (totalCount) given category is applied to. In addition we’re grabbing the title of books in given category. You can see for example that there are 3 books in magical creatures category.
+```
+{
+  allMarkdownRemark(filter: {frontmatter: {title: {ne: ""}}}) {
+    group(field: frontmatter___categories) {
+      fieldValue
+      totalCount
+      edges {
+        node {
+          frontmatter {
+            title
+          }
+        }
+      }
+    }
+    nodes {
+      frontmatter {
+        title
+        categories
+      }
+    }
+  }
+}
+```
+
+### 2-12. Fragments
+
+**Fragments are a way to save frequently used queries for re-use.** To create a fragment, define it in a query and export it as a named export from any file Gatsby is aware of. A fragment is available for use in any other GraphQL query, regardless of location in the project. **Fragments defined in a Gatsby project are global, so names must be unique.**
+
+The query below defines a fragment to get the site title, and then uses the fragment to access this information.
+```
+fragment fragmentName on Site {
+  siteMetadata {
+    title
+  }
+}
+
+{
+  site {
+    ...fragmentName
+  }
+}
+```
+
+
+### 2-13. Aliasing
+
+**Want to run two queries on the same datasource? You can do this by aliasing your queries.** See below for an example:
+```
+{
+  someEntries: allMarkdownRemark(skip: 3, limit: 3) {
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+  someMoreEntries: allMarkdownRemark(limit: 3) {
+    edges {
+      node {
+        frontmatter {
+          title
+        }
+      }
+    }
+  }
+}
+
+```
+When you use your data, **you will be able to reference it using the alias instead of the root query name.** In this example, that would be data.someEntries or data.someMoreEntries instead of data.allMarkdownRemark.
 
 ## Reference
 
