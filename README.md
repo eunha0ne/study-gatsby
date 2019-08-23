@@ -756,6 +756,137 @@ fragment fragmentName on Site {
 ```
 When you use your data, **you will be able to reference it using the alias instead of the root query name.** In this example, that would be data.someEntries or data.someMoreEntries instead of data.allMarkdownRemark.
 
+
+## 3. Introducing GraphiQL
+
+GraphiQL is the GraphQL integrated development environment (IDE). It’s a powerful (and all-around awesome) tool you’ll use often while building Gatsby websites.
+
+When the development server is running for one of your Gatsby sites, open GraphiQL at http://localhost:8000/___graphql and play with your data! Press `Ctrl + Space` (or use `Shift + Space` as an alternate keyboard shortcut) to bring up the autocomplete window and `Ctrl + Enter` to run the GraphQL query.
+
+## 4. Creating and Modifying Pages
+
+Pages can be created in three ways:
+* In your site’s gatsby-node.js by implementing the API `createPages`
+* Gatsby core automatically turns React components in `src/pages` into pages
+* Plugins can also implement `createPages` and create pages for you
+
+You can also implement the API `onCreatePage` to modify pages created in core or plugins or to create client-only routes.
+
+### Debugging help
+
+To see what pages are being created by your code or plugins, you can query for page information while developing in GraphiQL.
+```
+Copycopy code to clipboard
+{
+  allSitePage {
+    edges {
+      node {
+        path
+        component
+        pluginCreator {
+          name
+          pluginFilepath
+        }
+      }
+    }
+  }
+}
+```
+
+### Createing Pages in gatsby-node.js
+
+Often you will need to programmatically create pages. For example, you have markdown files where each should be a page. This example assumes that each markdown page has a path set in the frontmatter of the markdown file.
+
+```js
+// Implement the Gatsby API “createPages”. This is called once the
+// data layer is bootstrapped to let plugins create pages from data.
+exports.createPages = async ({ graphql, actions, reporter }) => {
+  const { createPage } = actions
+  // Query for markdown nodes to use in creating pages.
+  const result = await graphql(
+    `
+      {
+        allMarkdownRemark(limit: 1000) {
+          edges {
+            node {
+              frontmatter {
+                path
+              }
+            }
+          }
+        }
+      }
+    `
+  )
+  // Handle errors
+  if (result.errors) {
+    reporter.panicOnBuild(`Error while running GraphQL query.`)
+    return
+  }
+  // Create pages for each markdown file.
+  const blogPostTemplate = path.resolve(`src/templates/blog-post.js`)
+  result.data.allMarkdownRemark.edges.forEach(({ node }) => {
+    const path = node.frontmatter.path
+    createPage({
+      path,
+      component: blogPostTemplate,
+      // In your blog post template's graphql query, you can use path
+      // as a GraphQL variable to query for data from the markdown file.
+      context: {
+        path,
+      },
+    })
+  })
+}
+
+const { createFilePath } = require(`gatsby-source-filesystem`);
+exports.onCreateNode = ({ node, getNode, actions }) => {
+  const { createNodeField } = actions;
+  
+  if (node.internal.type === `MarkdownRemark`) {
+    const slug = createFilePath({ node, getNode, basePath: `pages` });
+    createNodeField({
+      node,
+      name: `slug`,
+      value: slug,
+    });
+  }
+};
+```
+
+### Modifying pages created by core or plugins
+Gatsby core and plugins can automatically create pages for you. Sometimes the default isn’t quite what you want and you need to modify the created page objects.
+
+#### Removing trailing slashes
+A common reason for needing to modify automatically created pages is to remove trailing slashes. (Note: There’s also a plugin that will remove all trailing slashes from pages automatically: gatsby-plugin-remove-trailing-slashes.)
+
+#### Pass context to pages
+The automatically created pages can receive context and use that as variables in their GraphQL queries. To override the default and pass your own context, open your site’s gatsby-node.js and add similar to the following:
+```js
+exports.onCreatePage = ({ page, actions }) => {
+  const { createPage, deletePage } = actions
+  deletePage(page)
+  // You can access the variable "house" in your page queries now
+  createPage({
+    ...page,
+    context: {
+      ...page.context,
+      house: `Gryffindor`,
+    },
+  })
+}
+```
+
+On your pages and templates, you can access your context via the prop pageContext like this:
+```jsx
+import React from "react"
+const Page = ({ pageContext }) => {
+  return <div>{pageContext.house}</div>
+}
+export default Page
+```
+Page context is serialized before being passed to pages: This means it can’t be used to pass functions into components.
+
 ## Reference
 
 * [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
