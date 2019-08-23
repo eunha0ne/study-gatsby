@@ -45,6 +45,9 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
       // context: {
       //   path,
       // },
+      context: {
+        slug: node.fields.slug
+      }
     })
   })
 };
