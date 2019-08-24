@@ -887,6 +887,50 @@ export default Page
 ```
 Page context is serialized before being passed to pages: This means it can’t be used to pass functions into components.
 
+
+## 5 Querying data in pages with graphQL
+
+Gatsby’s graphql tag enables page components to retrieve data via a GraphQL query.
+
+### How to use the `graphql` tag in pages
+#### Add description to siteMetadata
+```js
+module.exports = {
+  siteMetadata: {
+    title: "My Homepage",
+    description: "This is where I write my thoughts.",
+  },
+}
+
+// src/pages/index.js
+import React from "react"
+const HomePage = () => {
+  return <div>Hello!</div>
+}
+export default HomePage
+```
+
+#### Add the graphql query
+Below our HomePage component declaration, export a new constant called `query`, and set its value to be a graphql tagged template with the query between two backticks:
+```js
+export const query = graphql`
+  query HomePageQuery {
+    site {
+      siteMetadata {
+        description
+      }
+    }
+  }
+`
+```
+
+#### Provide data to the component
+```js
+const HomePage = ({data}) => {
+  return <div>{data.site.siteMetadata.description}</div>
+}
+```
+
 ## Reference
 
 * [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
