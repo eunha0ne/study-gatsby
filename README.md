@@ -931,6 +931,59 @@ const HomePage = ({data}) => {
 }
 ```
 
+## 6. Querying data in components using StaticQuery
+
+Gatsby v2 introduces `StaticQuery`, a new API that allows components to retrieve data via GraphQL query.
+```js
+// src/components/header.js
+import React from "react"
+import { StaticQuery, graphql } from "gatsby"
+export default () => (
+  <StaticQuery
+    query={graphql`
+      query HeadingQuery {
+        site {
+          siteMetadata {
+            title
+          }
+        }
+      }
+    `}
+    render={data => (
+      <header>
+        <h1>{data.site.siteMetadata.title}</h1>
+      </header>
+    )}
+  />
+)
+```
+**Using `StaticQuery`, you can colocate a component with its data. No longer is it required to, say, pass data down from Layout to Header.**
+
+### typechecking
+
+With the above pattern, you lose the ability to typecheck with PropTypes. To regain typechecking while achieving the same result, you can change the component to:
+```js
+import PropTypes from "prop-types"
+
+Header.propTypes = {
+  data: PropTypes.shape({
+    site: PropTypes.shape({
+      siteMetadata: PropTypes.shape({
+        title: PropTypes.string.isRequired,
+      }).isRequired,
+    }).isRequired,
+  }).isRequired,
+}
+
+```
+
+### How StaticQuery differs from page query
+StaticQuery can do most of the things that page query can, including fragments. The main differences are:
+* page queries can accept variables (via pageContext) but can only be added to page components
+* StaticQuery does not accept variables (hence the name “static”), but can be used in any component, including pages
+* StaticQuery does not work with raw React.createElement calls; please use JSX, e.g. <StaticQuery />
+
+
 ## Reference
 
 * [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
