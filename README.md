@@ -3,27 +3,12 @@
 > Gatsby의 GraphQL 문서를 정리한 내용을 담고 있습니다.
 
 * [Why Gatsby uses GraphQL](#1-why-gatsby-uses-graphql)
-  * [Create a page without any data](#1-1-create-a-page-without-any-data)
-  * [Create a page with hard-coded data](#1-2-create-a-page-with-hard-coded-data)
-  * [Create pages from JSON with images](#1-3-create-pages-from-json-with-images)
-  * [Create pages using GraphQL](#1-4-create-pages-using-graphql)
-  * [Generate pages with GraphQL](#1-5-generate-pages-with-graphql)
 * [Understanding GraphQL Syntax](#2-understanding-graphql-syntax)
-  * [Basic query](#2-1-Basic-query)
-  * [A longer query](#2-2-A-longer-query)
-  * [Limit](#2-3-Limit)
-  * [Skip](#2-4-Skip)
-  * [Filter](#2-5-Filter)
-  * [Comple list of possible operators](#2-6-Comple-list-of-possible-operators)
-  * [Sort](#2-7-Sort)
-  * [Format](#2-8-Format)
-    * Date
-    * Excerpt
-  * [Sort, filter, limit & format together](#2-9-Sort-filter-limit-&-format-together)
-  * [Query variables](#2-10-Query-variables)
-  * [Group](#2-11-Group)
-  * [Fragments](#2-12-Fragments)
-  * [Aliasing](#2-13-Aliasing)
+* [Introducing GraphiQL](#3-Introducing-GraphiQL)
+* [Creating and Modifying Pages](#4-Creating-and-Modifying-Pages)
+* [Querying data in pages with GraphQL](#5-Querying-data-in-pages-with-GraphQL)
+* [Querying data in components using StaticQuery](#6-Querying-data-in-components-using-StaticQuery)
+* [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -963,7 +948,30 @@ export default () => (
 
 With the above pattern, you lose the ability to typecheck with PropTypes. To regain typechecking while achieving the same result, you can change the component to:
 ```js
+import React from "react"
+import { StaticQuery, graphql } from "gatsby"
 import PropTypes from "prop-types"
+
+const Header = ({ data }) => (
+  <header>
+    <h1>{data.site.siteMetadata.title}</h1>
+  </header>
+)
+
+export default props => (
+  <StaticQuery
+    query={graphql`
+      query {
+        site {
+          siteMetadata {
+            title
+          }
+        }
+      }
+    `}
+    render={ data => <Header data={data} {...props} /> }
+  />
+)
 
 Header.propTypes = {
   data: PropTypes.shape({
@@ -974,7 +982,6 @@ Header.propTypes = {
     }).isRequired,
   }).isRequired,
 }
-
 ```
 
 ### How StaticQuery differs from page query
@@ -983,6 +990,68 @@ StaticQuery can do most of the things that page query can, including fragments. 
 * StaticQuery does not accept variables (hence the name “static”), but can be used in any component, including pages
 * StaticQuery does not work with raw React.createElement calls; please use JSX, e.g. <StaticQuery />
 
+## 7. Querying data in components with the useStaticQuery hook
+
+Gatsby v2.1.0 introduces useStaticQuery, a new Gatsby feature that provides the ability to use a [`React Hook`](https://reactjs.org/docs/hooks-intro.html) to query with GraphQL at build time.
+
+```bash
+# You’ll need React and ReactDOM 16.8.0 or later to use useStaticQuery
+npm install react@^16.8.0 react-dom@^16.8.0
+```
+useStaticQuery is a React Hook. All the Rules of Hooks apply. **It takes your GraphQL query and returns the requested data.**
+
+```js
+import React from "react"
+import { useStaticQuery, graphql } from "gatsby"
+export default () => {
+  const data = useStaticQuery(graphql`
+    query HeaderQuery {
+      site {
+        siteMetadata {
+          title
+        }
+      }
+    }
+  `)
+  return (
+    <header>
+      <h1>{data.site.siteMetadata.title}</h1>
+    </header>
+  )
+}
+```
+
+### Composing custom `useStaticQuery` hooks
+One of the most compelling(강력한) features of hooks is the ability to compose and re-use these blocks of functionality. useStaticQuery is a hook. Therefore, **using useStaticQuery allows us to compose and re-use blocks of reusable functionality.** Perfect!
+
+```js
+import { useStaticQuery, graphql } from "gatsby"
+export const useSiteMetadata = () => {
+  const { site } = useStaticQuery(
+    graphql`
+      query SiteMetaData {
+        site {
+          siteMetadata {
+            siteUrl
+            headline
+            description
+            image
+            video
+            twitter
+            name
+            logo
+          }
+        }
+      }
+    `
+  )
+  return site.siteMetadata
+}
+```
+
+### Known Limitations
+* `useStaticQuery` does not accept variables (hence the name “static”), but can be used in any component, including pages
+* Because of how queries currently work in Gatsby, we support only a single instance of useStaticQuery in a file
 
 ## Reference
 

@@ -1,32 +1,12 @@
 import React from "react"
-import { StaticQuery, graphql } from "gatsby"
-import PropTypes from "prop-types"
+import { useSiteMetadata } from "../hooks/use-site-metadata"
 
-export default () => (
-  <StaticQuery
-    query={graphql`
-      query HeadingQuery {
-        site {
-          siteMetadata {
-            title
-          }
-        }
-      }
-    `}
-    render={data => (
-      <header>
-        <h1>{data.site.siteMetadata.title}</h1>
-      </header>
-    )}
-  />
-);
-
-Header.propTypes = {
-  data: PropTypes.shape({
-    site: PropTypes.shape({
-      siteMetadata: PropTypes.shape({
-        title: PropTypes.string.isRequired,
-      }).isRequired,
-    }).isRequired,
-  }).isRequired,
+export default () => {
+  const { title, description } = useSiteMetadata();
+  return (
+    <header>
+      <h1>welcome to {title}</h1>
+      <p>{description}</p>
+    </header>
+  );
 }
