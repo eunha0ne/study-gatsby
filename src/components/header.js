@@ -2,10 +2,16 @@ import React from "react"
 import { StaticQuery, graphql } from "gatsby"
 import PropTypes from "prop-types"
 
-export default () => (
+const Header = ({ data }) => (
+  <header>
+    <h1>{data.site.siteMetadata.title}</h1>
+  </header>
+)
+
+export default props => (
   <StaticQuery
     query={graphql`
-      query HeadingQuery {
+      query {
         site {
           siteMetadata {
             title
@@ -13,13 +19,9 @@ export default () => (
         }
       }
     `}
-    render={data => (
-      <header>
-        <h1>{data.site.siteMetadata.title}</h1>
-      </header>
-    )}
+    render={ data => <Header data={data} {...props} /> }
   />
-);
+)
 
 Header.propTypes = {
   data: PropTypes.shape({
