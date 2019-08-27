@@ -40,7 +40,7 @@ Notice how the query signature exactly matches the returned JSON signature. This
 
 ## 1. Why Gatsby uses GraphQL
 
-### 1-1 Create a page without any data
+### Create a page without any data
 
 A common question about Gatsby is, “Why does Gatsby use GraphQL? Doesn’t it generate static files?”
 
@@ -78,7 +78,7 @@ exports.createPages = ({ actions: { createPage } }) => {
 
 However, you’ll often want to pass data to the page so that the template component is reusable.
 
-### 1-2. Create a page with hard-coded data
+### Create a page with hard-coded data
 
 To pass data to the created pages, you’ll need to pass `context` to the `createPage` call. In `gatsby-node.js`, we can add context like so:
 
@@ -111,7 +111,7 @@ const WithContext = ({ pageContext }) => (
 export default WithContext;
 ```
 
-### 1-3. Create pages from JSON with images
+### Create pages from JSON with images
 
 In many cases, the data for pages can’t feasibly be hard-coded into `gatsby-node.js`. More likely it will come from an external source, such as a third-party API, local Markdown, or JSON files.
 
@@ -194,7 +194,7 @@ This gets the job done, but it has a few shortcomings that are going to get more
 
 **To overcome these limitations, Gatsby introduces GraphQL as a data management layer.**
 
-### 1-4. Create pages using GraphQL
+### Create pages using GraphQL
 
 Using data/products.json as an example, by using GraphQL we’re able to solve all of the limitations from the previous section:
 
@@ -246,7 +246,7 @@ You can explore the available data schema using the “Docs” tab at the right.
 Test this query by entering it into the left-hand panel of the `[GraphQL Playground](https://github.com/prisma/graphql-playground)`, then pressing the play button in the top center.
 
 
-### 1-5. Generate pages with GraphQL
+### Generate pages with GraphQL
 In gatsby-node.js, we can use the GraphQL query we just wrote to generate pages.
 ```js
 // gatsby-node.js
@@ -331,7 +331,7 @@ GraphQL is certainly not required, but the benefits of adopting GraphQL are sign
 
 ## 2. Understanding GraphQL Syntax
 
-### 2-1. Basic query
+### Basic query
 
 Let’s start with the basics, pulling up the site `title` from your `gatsby-config.js`’s `siteMetaData`:
 ```
@@ -345,7 +345,7 @@ Let’s start with the basics, pulling up the site `title` from your `gatsby-con
 ```
 When typing in the query editor you can use `Ctrl + Space` to see autocomplete options and `Ctrl + Enter` to run the current query.
 
-### 2-2. A longer query
+### A longer query
 
 **Gatsby structures its content as collections of nodes, which are connected to each other with `edges`**. In this query you ask for the total count of plugins in this Gatsby site, along with specific information about each one.
 ```
@@ -365,7 +365,7 @@ When typing in the query editor you can use `Ctrl + Space` to see autocomplete o
 }
 ```
 
-### 2-3. Limit
+### Limit
 
 There are several ways to reduce the number of results from a query. Here totalCount tells you there’s 8 results, but `limit` is used to show only the first three.
 ```
@@ -383,7 +383,7 @@ There are several ways to reduce the number of results from a query. Here totalC
 }
 ```
 
-### 2-4. Skip
+### Skip
 
 Skip over a number of results. In this query `skip` is used to omit the first 3 results.
 ```
@@ -401,7 +401,7 @@ Skip over a number of results. In this query `skip` is used to omit the first 3 
 }
 ```
 
-### 2-5. Filter 
+### Filter 
 
 In this query `filter` and the `ne(not equals)` operator is used to show only results that have a title. [A good video tutorial](https://www.youtube.com/watch?v=Lg1bom99uGM) on this is here.
 ```
@@ -479,7 +479,7 @@ filter: { contentType: { in: ["post", "page"] }, draft: { eq: false } }
 }
 ```
 
-### 2-6. Complete list of possible operators
+### Complete list of possible operators
 * eq: short for equal, must match the given data exactly
 * ne: short for not equal, must be different from the given data
 * regex: short for regular expression, must match the given pattern. **Note that backslashes need to be escaped twice**, so `/\w+/` needs to be written as `"/\\\\w+/"`.
@@ -492,7 +492,7 @@ filter: { contentType: { in: ["post", "page"] }, draft: { eq: false } }
 * lte: short for less than or equal, must be less than or equal to given value
 * elemMatch: short for element match, this indicates that the field you are filtering will return an array of elements, on which you can apply a filter using the previous operators
 
-### 2-7. Sort
+### Sort
 The ordering of your results can be specified with `sort`. Here the results are sorted in ascending order of `frontmatter`’s `date` field.
 ```
 {
@@ -564,7 +564,7 @@ Children's Anthology of Monsters and Break with Banshee both have the same date 
 
 By default, sort fields will be sorted in ascending order. Optionally, you can specify a sort order per field by providing an array of `ASC (for ascending)` or `DESC (for descending)` values. (2) For example, to sort by frontmatter.date in ascending order, and additionally by frontmatter.title in descending order, you would use sort: { fields: [frontmatter___date, frontmatter___title], order: [ASC, DESC] }. Note that if you only provide a single sort order value, this will affect the first sort field only, the rest will be sorted in default ascending order.
 
-### 2-8. Format
+### Format
 #### Date
 Dates can be formatted using the `formatString` function.
 ```
@@ -617,7 +617,7 @@ Excerpts accept three options: `pruneLength`, `truncate`, and `format`. `format`
 
 ```
 
-### 2-9. Sort, filter, limit & format together
+### Sort, filter, limit & format together
 
 This query combines sorting, filtering, limiting and formatting together.
 ```
@@ -639,7 +639,7 @@ This query combines sorting, filtering, limiting and formatting together.
 }
 ```
 
-### 2-10. Query variables
+### Query variables
 
 In addition to adding query arguments directly to queries, **GraphQL allows to pass in “query variables”. These can be both simple scalar values as well as objects.** The query below is the same one as the previous example, but with the input arguments passed in as “query variables”.
 
@@ -665,7 +665,7 @@ query GetBlogPosts(
 }
 ```
 
-### 2-11. Group
+### Group
 
 **You can also group values on the basis of a field** e.g. the title, date or category and get the field value, the total number of occurrences and edges.
 
@@ -694,7 +694,7 @@ The query below gets us all categories (fieldValue) applied to a book and how ma
 }
 ```
 
-### 2-12. Fragments
+### Fragments
 
 **Fragments are a way to save frequently used queries for re-use.** To create a fragment, define it in a query and export it as a named export from any file Gatsby is aware of. A fragment is available for use in any other GraphQL query, regardless of location in the project. **Fragments defined in a Gatsby project are global, so names must be unique.**
 
@@ -714,7 +714,7 @@ fragment fragmentName on Site {
 ```
 
 
-### 2-13. Aliasing
+### Aliasing
 
 **Want to run two queries on the same datasource? You can do this by aliasing your queries.** See below for an example:
 ```
@@ -1054,7 +1054,7 @@ export const useSiteMetadata = () => {
 * `useStaticQuery` does not accept variables (hence the name “static”), but can be used in any component, including pages
 * Because of how queries currently work in Gatsby, we support only a single instance of useStaticQuery in a file
 
-## Using fragments
+## 8. Using fragments
 
 Fragments allow you to reuse parts of GraphQL queries. It also allows you to split up complex queries into smaller, easier to understand components.
 
