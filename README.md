@@ -9,6 +9,7 @@
 * [Querying data in pages with GraphQL](#5-Querying-data-in-pages-with-GraphQL)
 * [Querying data in components using StaticQuery](#6-Querying-data-in-components-using-StaticQuery)
 * [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
+* [Using Fragments](#8-Using-Fragments)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -1052,6 +1053,69 @@ export const useSiteMetadata = () => {
 ### Known Limitations
 * `useStaticQuery` does not accept variables (hence the name “static”), but can be used in any component, including pages
 * Because of how queries currently work in Gatsby, we support only a single instance of useStaticQuery in a file
+
+## Using fragments
+
+Fragments allow you to reuse parts of GraphQL queries. It also allows you to split up complex queries into smaller, easier to understand components.
+
+### The building blocks of a fragment
+
+```
+fragment FragmentName on TypeName {
+  field1
+  field2
+}
+```
+* `FragmentName`: the name of the fragment that will be referenced later.
+* `TypeName`: the [GraphQL type](https://graphql.org/graphql-js/object-types/) of the object the fragment will be used on. This is important because you can only query for fields that actually exist on a given object.
+* The body of the query. You can define any fields with any level of nesting in here, the same that you would elsewhere in a GraphQL query
+
+
+### Creating and using a fragment 
+
+A fragment can be created inside any GraphQL query, but it’s good practice to create the query separately. More organization advice in the [Conceptual Guide](https://www.gatsbyjs.org/docs/querying-with-graphql/#fragments)
+```jsx
+// src/components/IndexPost.jsx
+import React from "react"
+import { graphql } from "gatsby"
+export default ( props ) => {
+  return (...)
+}
+export const query = graphql`
+  fragment SiteInformation on Site {
+    siteMetadata {
+      title
+      siteDescription
+    }
+  }
+`
+// src/pages/main.jsx
+import React from "react"
+import { graphql } from "gatsby"
+import IndexPost from "../components/IndexPost"
+export default ({ data }) => {
+  return (
+    <div>
+      <h1>{data.site.siteMetadata.title}</h1>
+      <p>{data.site.siteMetadata.siteDescription}</p>
+      {/*
+        Or you can pass all the data from the fragment
+        back to the component that defined it
+      */}
+      <IndexPost siteInformation={data.site.siteMetadata} />
+    </div>
+  )
+}
+export const query = graphql`
+  query {
+    site {
+      ...SiteInformation
+    }
+  }
+`
+
+```
+When compiling your site, Gatsby preprocesses all GraphQL queries it finds. Therefore, any file that gets included in your project can define a snippet. However, **only Pages can define GraphQL queries that actually return data. This is why we can define the fragment in the component file** - it doesn’t actually return any data directly.
 
 ## Reference
 
