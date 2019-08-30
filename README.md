@@ -10,6 +10,7 @@
 * [Querying data in components using StaticQuery](#6-Querying-data-in-components-using-StaticQuery)
 * [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
 * [Using Fragments](#8-Using-Fragments)
+* [Creating slugs for pages](#9-Creating-slugs-for-pages)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -1116,6 +1117,43 @@ export const query = graphql`
 
 ```
 When compiling your site, Gatsby preprocesses all GraphQL queries it finds. Therefore, any file that gets included in your project can define a snippet. However, **only Pages can define GraphQL queries that actually return data. This is why we can define the fragment in the component file** - it doesn’t actually return any data directly.
+
+
+## 9. Creating slugs for pages
+
+```bash
+npm install --save gatsby-source-filesystem
+```
+
+Add your new slugs directly onto the `MarkdownRemark` nodes. Any data you add to nodes is available to query later with GraphQL. To do so, you’ll use a function passed to our API implementation called `createNodeField`. This function allows you to create additional fields on nodes created by other plugins.
+```js
+const { createFilePath } = require(`gatsby-source-filesystem`)
+exports.onCreateNode = ({ node, getNode, actions }) => {
+  const { createNodeField } = actions
+  if (node.internal.type === `MarkdownRemark`) {
+    const slug = createFilePath({ node, getNode, basePath: `pages` })
+    createNodeField({
+      node,
+      name: `slug`,
+      value: slug,
+    })
+  }
+}
+```
+
+```
+{
+  allMarkdownRemark {
+    edges {
+      node {
+        fields {
+          slug
+        }
+      }
+    }
+  }
+}
+```
 
 ## Reference
 
