@@ -42,9 +42,6 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
       component: blogPostTemplate,
       // In your blog post template's graphql query, you can use path
       // as a GraphQL variable to query for data from the markdown file.
-      // context: {
-      //   path,
-      // },
       context: {
         slug: node.fields.slug
       }
