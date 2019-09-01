@@ -11,6 +11,7 @@
 * [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
 * [Using Fragments](#8-Using-Fragments)
 * [Creating slugs for pages](#9-Creating-slugs-for-pages)
+* [Creating pages from data programatically](#10-Creating-pages-from-data-programatically)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -1154,6 +1155,84 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
   }
 }
 ```
+
+## 10. Creating pages from data programatically
+
+Gatsby and its ecosystem of plugins provide all kinds of data through a GraphQL interface. 
+
+### creating pages
+
+The Gatsby Node API provides the `createPages` extension point which we’ll use to add pages. This function will give us access to the `createPage` action which is at the core of programmatically creating a page.
+
+```js
+exports.createPages = async function({ actions, graphql }) {
+  const { data } = await graphql(`
+    query {
+      allMarkdownRemark {
+        edges {
+          node {
+            fields {
+              slug
+            }
+          }
+        }
+      }
+    }
+  `)
+  data.allMarkdownRemark.edges.forEach(edge => {
+    const slug = edge.node.fields.slug
+    actions.createPage({
+      path: slug,
+      component: require.resolve(`./src/templates/blog-post.js`),
+      context: { slug: slug },
+    })
+  })
+}
+```
+
+For each page we want to create **we must specify the `path` for visiting that page, the component template used to render that page, and any context we need in the component for rendering.**
+
+**The `context` parameter is optional**, though often times it will include a unique identifier that can be used to query for associated data that will be rendered to the page. **All context values are made available to a template’s GraphQL queries as arguments prefaced with $**, so from our example above the slug property will become the $slug argument in our page query:
+```js
+export const query = graphql`
+  query($slug: String!) {
+    ...
+  }
+```
+
+### Specifying a template
+
+The `createPage` action required that we specify the component template that will be used to render the page.
+```js
+import React from "react"
+import { graphql } from "gatsby"
+import Layout from "../components/layout"
+export default ({ data }) => {
+  const post = data.markdownRemark
+  return (
+    <Layout>
+      <div>
+        <h1>{post.frontmatter.title}</h1>
+        <div dangerouslySetInnerHTML={{ __html: post.html }} />
+      </div>
+    </Layout>
+  )
+}
+export const query = graphql`
+  query($slug: String!) {
+    markdownRemark(fields: { slug: { eq: $slug } }) {
+      html
+      frontmatter {
+        title
+      }
+    }
+  }
+`
+```
+Notice that **we’re able to query with the $slug value from our context as an argument, which ensures that we’re returning only the data that matches that specific page.** As a result we can provide the title and html from the matching markdownRemark record to our component. The context values are also available as the pageContext prop in the template component itself.
+
+The `gatsby-transformer-remark` plugin is just one of a multitude of **Gatsby plugins that can provide data through the GraphQL interface. Any of that data can be used to programmatically create pages.**
+
 
 ## Reference
 
