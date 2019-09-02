@@ -19,6 +19,12 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
           }
         }
       }
+      thirdAPI: swapi {
+        allSpecies {
+          id
+          name
+        }
+      }
     }
   `);
 
@@ -46,7 +52,18 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
         slug: node.fields.slug
       }
     })
-  })
+  });
+
+  results.data.thirdAPI.allSpecies.forEach(({ id, name }) => {
+    createPage({
+      path: name,
+      component: path.resolve(`./src/templates/species.js`),
+      context: {
+        speciesId: id,
+        name: name
+      },
+    })
+  });
 };
 
 
