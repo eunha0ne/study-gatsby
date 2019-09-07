@@ -1,7 +1,8 @@
 const path = require(`path`);
+const blogPostTemplate = path.resolve(`src/templates/blog-post.js`);
 
-exports.createPages = async ({ actions: { createPage }, graphql }) => {
-  const results = await graphql(`
+const getResults = (graphql) => {
+  return graphql(`
     {
       allProducts: allProductsJson {
         edges {
@@ -26,21 +27,28 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
         }
       }
     }
-  `);
+`);
+}
+
+exports.createPages = async ({ actions: { createPage }, graphql }) => {
+  const results = await getResults(graphql);
+  if (results.errors) {
+    reporter.panicOnBuild(`Error while running GraphQL query.`)
+    return
+  }
 
   results.data.allProducts.edges.forEach(edge => {
     const product = edge.node;
     createPage({
       path: `/gql/${product.slug}`,
       component: require.resolve("./src/templates/product-graphql.js"),
-      context: {
+      context: { 
         slug: product.slug,
       },
     });
   });
 
   // Create pages for each markdown file.
-  const blogPostTemplate = path.resolve(`src/templates/blog-post.js`)
   results.data.allMarkdown.edges.forEach(({ node }) => {
     const path = replacePath(node.fields.slug);
     createPage({
