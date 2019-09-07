@@ -12,7 +12,8 @@
 * [Using Fragments](#8-Using-Fragments)
 * [Creating slugs for pages](#9-Creating-slugs-for-pages)
 * [Creating pages from data programatically](#10-Creating-pages-from-data-programatically)
-* [Using third-party GraphQL APIs](11-Using-third-party-GraphQL-APIs)
+* [Using third-party GraphQL APIs](#11-Using-third-party-GraphQL-APIs)
+* [Adding Markdown Pages](#12-Adding-Markdown-Pages)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
