@@ -14,6 +14,7 @@
 * [Creating pages from data programatically](#10-Creating-pages-from-data-programatically)
 * [Using third-party GraphQL APIs](#11-Using-third-party-GraphQL-APIs)
 * [Adding Markdown Pages](#12-Adding-Markdown-Pages)
+* [Adding a List of Markdown Blog Posts](#13-Adding-a-List-of-Markdown-Blog-Posts)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -1464,6 +1465,86 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
 }
 ```
 
+## 13. Adding a List of Markdown Blog Posts
+
+As described previous section, you will have to create your posts in Markdown files which will look like this:
+```md
+---
+path: "/blog/my-first-post"
+date: "2017-11-07"
+title: "My first blog post"
+---
+Has anyone heard about GatsbyJS yet?
+```
+
+### Creating the page
+
+The first step will be to create the page which will display your posts, in src/pages/. You can for example use index.js.
+```js
+import React from "react"
+import PostLink from "../components/post-link"
+const IndexPage = ({
+  data: {
+    allMarkdownRemark: { edges },
+  },
+}) => {
+  const Posts = edges
+    .filter(edge => !!edge.node.frontmatter.date) // You can filter your posts based on some criteria
+    .map(edge => <PostLink key={edge.node.id} post={edge.node} />)
+  return <div>{Posts}</div>
+}
+export default IndexPage
+```
+
+### Creating the GraphQl Query
+```js
+import React from "react"
+import { graphql } from "gatsby"
+import PostLink from "../components/post-link"
+const IndexPage = ({
+  data: {
+    allMarkdownRemark: { edges },
+  },
+}) => {
+  const Posts = edges
+    .filter(edge => !!edge.node.frontmatter.date) // You can filter your posts based on some criteria
+    .map(edge => <PostLink key={edge.node.id} post={edge.node} />)
+  return <div>{Posts}</div>
+}
+export default IndexPage
+export const pageQuery = graphql`
+  query {
+    allMarkdownRemark(sort: { order: DESC, fields: [frontmatter___date] }) {
+      edges {
+        node {
+          id
+          excerpt(pruneLength: 250)
+          frontmatter {
+            date(formatString: "MMMM DD, YYYY")
+            path
+            title
+          }
+        }
+      }
+    }
+  }
+`
+```
+
+### Creating the PostLink componetn
+```js
+import React from "react"
+import { Link } from "gatsby"
+const PostLink = ({ post }) => (
+  <div>
+    <Link to={post.frontmatter.path}>
+      {post.frontmatter.title} ({post.frontmatter.date})
+    </Link>
+  </div>
+)
+export default PostLink
+```
+This should get you a page with your posts sorted by descending date. You can further customize the frontmatter and the page and PostLink components to get your desired effects!
 
 ## Reference
 
