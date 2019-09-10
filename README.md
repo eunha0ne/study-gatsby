@@ -1546,6 +1546,14 @@ export default PostLink
 ```
 This should get you a page with your posts sorted by descending date. You can further customize the frontmatter and the page and PostLink components to get your desired effects!
 
+## 14. Using the GraphQL Playground
+
+An alternative to the current IDE for your GraphQL queries: [GraphQL Playground](https://github.com/prisma/graphql-playground). To access this experimental feature utilizing GraphQL Playground with Gatsby, add GATSBY_GRAPHQL_IDE to your develop script in your package.json, like this:
+```js
+"develop": "GATSBY_GRAPHQL_IDE=playground gatsby develop",
+```
+To still be able to use `gatsby develop` you would require the dotenv package to your gatsby-config.js file and add an [environment variable](https://www.gatsbyjs.org/docs/environment-variables/) file, typically called `.env.development`. Finally, add `GATSBY_GRAPHQL_IDE=playground` to the `.env.development` file.
+
 ## Reference
 
 * [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
