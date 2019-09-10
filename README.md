@@ -2,19 +2,20 @@
 
 > Gatsby의 GraphQL 문서를 정리한 내용을 담고 있습니다.
 
-* [Why Gatsby uses GraphQL](#1-why-gatsby-uses-graphql)
-* [Understanding GraphQL Syntax](#2-understanding-graphql-syntax)
-* [Introducing GraphiQL](#3-Introducing-GraphiQL)
-* [Creating and Modifying Pages](#4-Creating-and-Modifying-Pages)
-* [Querying data in pages with GraphQL](#5-Querying-data-in-pages-with-GraphQL)
-* [Querying data in components using StaticQuery](#6-Querying-data-in-components-using-StaticQuery)
-* [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
-* [Using Fragments](#8-Using-Fragments)
-* [Creating slugs for pages](#9-Creating-slugs-for-pages)
-* [Creating pages from data programatically](#10-Creating-pages-from-data-programatically)
-* [Using third-party GraphQL APIs](#11-Using-third-party-GraphQL-APIs)
-* [Adding Markdown Pages](#12-Adding-Markdown-Pages)
-* [Adding a List of Markdown Blog Posts](#13-Adding-a-List-of-Markdown-Blog-Posts)
+- [Why Gatsby uses GraphQL](#1-why-gatsby-uses-graphql)
+- [Understanding GraphQL Syntax](#2-understanding-graphql-syntax)
+- [Introducing GraphiQL](#3-Introducing-GraphiQL)
+- [Creating and Modifying Pages](#4-Creating-and-Modifying-Pages)
+- [Querying data in pages with GraphQL](#5-Querying-data-in-pages-with-GraphQL)
+- [Querying data in components using StaticQuery](#6-Querying-data-in-components-using-StaticQuery)
+- [Querying data in components with the useStaticQuery hook](#7-Querying-data-in-components-with-the-useStaticQuery-hook)
+- [Using Fragments](#8-Using-Fragments)
+- [Creating slugs for pages](#9-Creating-slugs-for-pages)
+- [Creating pages from data programatically](#10-Creating-pages-from-data-programatically)
+- [Using third-party GraphQL APIs](#11-Using-third-party-GraphQL-APIs)
+- [Adding Markdown Pages](#12-Adding-Markdown-Pages)
+- [Adding a List of Markdown Blog Posts](#13-Adding-a-List-of-Markdown-Blog-Posts)
+- [Using the GraphQL Playground](#14-Using-the-GraphQL-Playground)
 
 When building with Gatsby, you access your data through a query language named GraphQL. **`GraphQL` allows you to declaratively express your data needs.** This is done with queries, **`queries` are the representation of the data you need.** A query looks like this:
 
@@ -237,6 +238,7 @@ module.exports = {
 ```
 
 You can explore the available data schema using the “Docs” tab at the right. One of the available options is `allProductsJson`, which contains “edges”, and those contain “nodes”. The JSON transformer plugin has created one node for each product, and inside the node we can select the data we need for that product.
+
 ```
 {
   allProductsJson {
@@ -248,11 +250,13 @@ You can explore the available data schema using the “Docs” tab at the right.
   }
 }
 ```
+
 Test this query by entering it into the left-hand panel of the `[GraphQL Playground](https://github.com/prisma/graphql-playground)`, then pressing the play button in the top center.
 
-
 ### Generate pages with GraphQL
+
 In gatsby-node.js, we can use the GraphQL query we just wrote to generate pages.
+
 ```js
 // gatsby-node.js
 exports.createPages = async ({ actions: { createPage }, graphql }) => {
@@ -266,19 +270,20 @@ exports.createPages = async ({ actions: { createPage }, graphql }) => {
         }
       }
     }
-  `)
+  `);
   results.data.allProductsJson.edges.forEach(edge => {
-    const product = edge.node
+    const product = edge.node;
     createPage({
       path: `/gql/${product.slug}/`,
       component: require.resolve("./src/templates/product-graphql.js"),
       context: {
         slug: product.slug,
       },
-    })
-  })
-}
+    });
+  });
+};
 ```
+
 You need to use the graphql helper that’s available to the `createPages` Node API to execute the query. To make sure that the result of the query comes back before continuing, use `async`/`await`.
 
 The results that come back are very similar to the contents of data/products.json, so you can loop through the results and create a page for each. However, **note that you’re only passing the slug in context — you’ll use this in the template component to load more product data.**
@@ -287,9 +292,9 @@ As you’ve already seen, the context argument is made available to the template
 
 ```jsx
 // src/templates/product-graphql.js
-import React from "react"
-import { graphql } from "gatsby"
-import Image from "gatsby-image"
+import React from "react";
+import { graphql } from "gatsby";
+import Image from "gatsby-image";
 export const query = graphql`
   query($slug: String!) {
     productsJson(slug: { eq: $slug }) {
@@ -305,9 +310,9 @@ export const query = graphql`
       }
     }
   }
-`
+`;
 const Product = ({ data }) => {
-  const product = data.productsJson
+  const product = data.productsJson;
   return (
     <div>
       <h1>{product.title}</h1>
@@ -319,26 +324,28 @@ const Product = ({ data }) => {
       <p>{product.price}</p>
       <div dangerouslySetInnerHTML={{ __html: product.description }} />
     </div>
-  )
-}
-export default Product
+  );
+};
+export default Product;
 ```
+
 A few notes about this file:
-* The result of the query is added to the template component as the data prop.
-* The image path was automatically converted by the Sharp transformer into a “child node” that includes optimized versions of the image.
-* The query uses a `[GraphQL fragment](https://www.gatsbyjs.org/packages/gatsby-image/)` to query all the required data for optimized images. GraphQL fragments do not work in the GraphQL Playground.
-* The img tag has been swapped out for a gatsby-image component named Image. Instead of a src attribute, it accepts an object with optimized image data.
+
+- The result of the query is added to the template component as the data prop.
+- The image path was automatically converted by the Sharp transformer into a “child node” that includes optimized versions of the image.
+- The query uses a `[GraphQL fragment](https://www.gatsbyjs.org/packages/gatsby-image/)` to query all the required data for optimized images. GraphQL fragments do not work in the GraphQL Playground.
+- The img tag has been swapped out for a gatsby-image component named Image. Instead of a src attribute, it accepts an object with optimized image data.
 
 After the initial setup, loading data with GraphQL is fairly similar to directly loading JSON, but **it provides extra benefits like automatically optimizing images and keeping the data loading in the same place where it’s used.**
 
 GraphQL is certainly not required, but the benefits of adopting GraphQL are significant. **GraphQL will simplify the process of building and optimizing your pages**, so it’s considered a best practice for structuring and writing Gatsby applications.
-
 
 ## 2. Understanding GraphQL Syntax
 
 ### Basic query
 
 Let’s start with the basics, pulling up the site `title` from your `gatsby-config.js`’s `siteMetaData`:
+
 ```
 {
   site {
@@ -348,11 +355,13 @@ Let’s start with the basics, pulling up the site `title` from your `gatsby-con
   }
 }
 ```
+
 When typing in the query editor you can use `Ctrl + Space` to see autocomplete options and `Ctrl + Enter` to run the current query.
 
 ### A longer query
 
 **Gatsby structures its content as collections of nodes, which are connected to each other with `edges`**. In this query you ask for the total count of plugins in this Gatsby site, along with specific information about each one.
+
 ```
 {
   allSitePlugin {
@@ -373,6 +382,7 @@ When typing in the query editor you can use `Ctrl + Space` to see autocomplete o
 ### Limit
 
 There are several ways to reduce the number of results from a query. Here totalCount tells you there’s 8 results, but `limit` is used to show only the first three.
+
 ```
 {
   allMarkdownRemark(limit: 3) {
@@ -391,6 +401,7 @@ There are several ways to reduce the number of results from a query. Here totalC
 ### Skip
 
 Skip over a number of results. In this query `skip` is used to omit the first 3 results.
+
 ```
 {
   allMarkdownRemark(skip: 1) {
@@ -406,9 +417,10 @@ Skip over a number of results. In this query `skip` is used to omit the first 3 
 }
 ```
 
-### Filter 
+### Filter
 
 In this query `filter` and the `ne(not equals)` operator is used to show only results that have a title. [A good video tutorial](https://www.youtube.com/watch?v=Lg1bom99uGM) on this is here.
+
 ```
 {
   allMarkdownRemark(
@@ -427,14 +439,17 @@ In this query `filter` and the `ne(not equals)` operator is used to show only re
   }
 }
 ```
-Gatsby relies on [Sift](https://www.npmjs.com/package/sift) to enable MongoDB-like query syntax for object filtering. This allows Gatsby to support operators like `eq`, `ne`, `in`, `regex` and querying nested fields through the `__` connector. 
+
+Gatsby relies on [Sift](https://www.npmjs.com/package/sift) to enable MongoDB-like query syntax for object filtering. This allows Gatsby to support operators like `eq`, `ne`, `in`, `regex` and querying nested fields through the `__` connector.
 
 It is also possible to filter on multiple fields - just separate the individual filters by a comma (works as an AND):
+
 ```js
 filter: { contentType: { in: ["post", "page"] }, draft: { eq: false } }
 ```
 
 (1) In this query the fields `categories` and `title` are filtered to find the book that has Fantastic in its title and belongs to the magical creatures category. (2) And you can also combine the mentioned operators. This query filters on `/History/` for the `regex` operator. The result is Hogwarts: A History and History of Magic. You can filter out the latter with the `ne` operator.
+
 ```
 # example: 1
 {
@@ -485,20 +500,23 @@ filter: { contentType: { in: ["post", "page"] }, draft: { eq: false } }
 ```
 
 ### Complete list of possible operators
-* eq: short for equal, must match the given data exactly
-* ne: short for not equal, must be different from the given data
-* regex: short for regular expression, must match the given pattern. **Note that backslashes need to be escaped twice**, so `/\w+/` needs to be written as `"/\\\\w+/"`.
-* glob: short for global, allows to use wildcard `*` which acts as a placeholder for any non-empty string
-* in: short for in array, must be an element of the array
-* nin: short for not in array, must NOT be an element of the array
-* gt: short for greater than, must be greater than given value
-* gte: short for greater than or equal, must be greater than or equal to given value
-* lt: short for less than, must be less than given value
-* lte: short for less than or equal, must be less than or equal to given value
-* elemMatch: short for element match, this indicates that the field you are filtering will return an array of elements, on which you can apply a filter using the previous operators
+
+- eq: short for equal, must match the given data exactly
+- ne: short for not equal, must be different from the given data
+- regex: short for regular expression, must match the given pattern. **Note that backslashes need to be escaped twice**, so `/\w+/` needs to be written as `"/\\\\w+/"`.
+- glob: short for global, allows to use wildcard `*` which acts as a placeholder for any non-empty string
+- in: short for in array, must be an element of the array
+- nin: short for not in array, must NOT be an element of the array
+- gt: short for greater than, must be greater than given value
+- gte: short for greater than or equal, must be greater than or equal to given value
+- lt: short for less than, must be less than given value
+- lte: short for less than or equal, must be less than or equal to given value
+- elemMatch: short for element match, this indicates that the field you are filtering will return an array of elements, on which you can apply a filter using the previous operators
 
 ### Sort
+
 The ordering of your results can be specified with `sort`. Here the results are sorted in ascending order of `frontmatter`’s `date` field.
+
 ```
 {
   allMarkdownRemark(
@@ -563,6 +581,7 @@ The ordering of your results can be specified with `sort`. Here the results are 
 }
 
 ```
+
 (1) You can also sort on multiple fields but the `sort` keyword can only be used once. The second sort field gets evaluated when the first field (here: date) is identical. The results of the following query are sorted in ascending order of date and title field.
 
 Children's Anthology of Monsters and Break with Banshee both have the same date (1992-01-02) but in the first query (only one sort field) the latter comes after the first. The additional sorting on the title puts Break with Banshee in the right order.
@@ -570,8 +589,11 @@ Children's Anthology of Monsters and Break with Banshee both have the same date 
 By default, sort fields will be sorted in ascending order. Optionally, you can specify a sort order per field by providing an array of `ASC (for ascending)` or `DESC (for descending)` values. (2) For example, to sort by frontmatter.date in ascending order, and additionally by frontmatter.title in descending order, you would use sort: { fields: [frontmatter___date, frontmatter___title], order: [ASC, DESC] }. Note that if you only provide a single sort order value, this will affect the first sort field only, the rest will be sorted in default ascending order.
 
 ### Format
+
 #### Date
+
 Dates can be formatted using the `formatString` function.
+
 ```
 {
   allMarkdownRemark(
@@ -584,7 +606,7 @@ Dates can be formatted using the `formatString` function.
           date(
             formatString: "dddd DD MMMM YYYY" // "Wednesday 01 January 1992"
             locale: "de-DE" // or "ko"
-          ) 
+          )
         }
       }
     }
@@ -592,6 +614,7 @@ Dates can be formatted using the `formatString` function.
 }
 
 ```
+
 You can also pass in a `locale` to adapt the output to your language. The above query gives you the english output for the weekdays, this example outputs them in german. See [moment.js documentation](https://momentjs.com/docs/#/displaying/format/) for more tokens.
 
 Dates also accept the `fromNow` and `difference` function. The former returns a string generated with Moment.js’ fromNow function, the latter returns the difference between the date and current time (using Moment.js’ difference function).
@@ -599,6 +622,7 @@ Dates also accept the `fromNow` and `difference` function. The former returns a 
 #### Excerpt
 
 Excerpts accept three options: `pruneLength`, `truncate`, and `format`. `format` can be `PLAIN` or `HTML`.
+
 ```
 {
   allMarkdownRemark(
@@ -625,6 +649,7 @@ Excerpts accept three options: `pruneLength`, `truncate`, and `format`. `format`
 ### Sort, filter, limit & format together
 
 This query combines sorting, filtering, limiting and formatting together.
+
 ```
 {
   allMarkdownRemark(
@@ -649,6 +674,7 @@ This query combines sorting, filtering, limiting and formatting together.
 In addition to adding query arguments directly to queries, **GraphQL allows to pass in “query variables”. These can be both simple scalar values as well as objects.** The query below is the same one as the previous example, but with the input arguments passed in as “query variables”.
 
 To add variables to page component queries, pass these in the `context` object when creating pages.
+
 ```
 query GetBlogPosts(
   $limit: Int, $filter: MarkdownRemarkFilterInput, $sort: MarkdownRemarkSortInput
@@ -675,6 +701,7 @@ query GetBlogPosts(
 **You can also group values on the basis of a field** e.g. the title, date or category and get the field value, the total number of occurrences and edges.
 
 The query below gets us all categories (fieldValue) applied to a book and how many books (totalCount) given category is applied to. In addition we’re grabbing the title of books in given category. You can see for example that there are 3 books in magical creatures category.
+
 ```
 {
   allMarkdownRemark(filter: {frontmatter: {title: {ne: ""}}}) {
@@ -704,6 +731,7 @@ The query below gets us all categories (fieldValue) applied to a book and how ma
 **Fragments are a way to save frequently used queries for re-use.** To create a fragment, define it in a query and export it as a named export from any file Gatsby is aware of. A fragment is available for use in any other GraphQL query, regardless of location in the project. **Fragments defined in a Gatsby project are global, so names must be unique.**
 
 The query below defines a fragment to get the site title, and then uses the fragment to access this information.
+
 ```
 fragment fragmentName on Site {
   siteMetadata {
@@ -718,10 +746,10 @@ fragment fragmentName on Site {
 }
 ```
 
-
 ### Aliasing
 
 **Want to run two queries on the same datasource? You can do this by aliasing your queries.** See below for an example:
+
 ```
 {
   someEntries: allMarkdownRemark(skip: 3, limit: 3) {
@@ -745,8 +773,8 @@ fragment fragmentName on Site {
 }
 
 ```
-When you use your data, **you will be able to reference it using the alias instead of the root query name.** In this example, that would be data.someEntries or data.someMoreEntries instead of data.allMarkdownRemark.
 
+When you use your data, **you will be able to reference it using the alias instead of the root query name.** In this example, that would be data.someEntries or data.someMoreEntries instead of data.allMarkdownRemark.
 
 ## 3. Introducing GraphiQL
 
@@ -757,15 +785,17 @@ When the development server is running for one of your Gatsby sites, open Graphi
 ## 4. Creating and Modifying Pages
 
 Pages can be created in three ways:
-* In your site’s gatsby-node.js by implementing the API `createPages`
-* Gatsby core automatically turns React components in `src/pages` into pages
-* Plugins can also implement `createPages` and create pages for you
+
+- In your site’s gatsby-node.js by implementing the API `createPages`
+- Gatsby core automatically turns React components in `src/pages` into pages
+- Plugins can also implement `createPages` and create pages for you
 
 You can also implement the API `onCreatePage` to modify pages created in core or plugins or to create client-only routes.
 
 ### Debugging help
 
 To see what pages are being created by your code or plugins, you can query for page information while developing in GraphiQL.
+
 ```
 Copycopy code to clipboard
 {
@@ -792,7 +822,7 @@ Often you will need to programmatically create pages. For example, you have mark
 // Implement the Gatsby API “createPages”. This is called once the
 // data layer is bootstrapped to let plugins create pages from data.
 exports.createPages = async ({ graphql, actions, reporter }) => {
-  const { createPage } = actions
+  const { createPage } = actions;
   // Query for markdown nodes to use in creating pages.
   const result = await graphql(
     `
@@ -808,16 +838,16 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
         }
       }
     `
-  )
+  );
   // Handle errors
   if (result.errors) {
-    reporter.panicOnBuild(`Error while running GraphQL query.`)
-    return
+    reporter.panicOnBuild(`Error while running GraphQL query.`);
+    return;
   }
   // Create pages for each markdown file.
-  const blogPostTemplate = path.resolve(`src/templates/blog-post.js`)
+  const blogPostTemplate = path.resolve(`src/templates/blog-post.js`);
   result.data.allMarkdownRemark.edges.forEach(({ node }) => {
-    const path = node.frontmatter.path
+    const path = node.frontmatter.path;
     createPage({
       path,
       component: blogPostTemplate,
@@ -826,14 +856,14 @@ exports.createPages = async ({ graphql, actions, reporter }) => {
       context: {
         path,
       },
-    })
-  })
-}
+    });
+  });
+};
 
 const { createFilePath } = require(`gatsby-source-filesystem`);
 exports.onCreateNode = ({ node, getNode, actions }) => {
   const { createNodeField } = actions;
-  
+
   if (node.internal.type === `MarkdownRemark`) {
     const slug = createFilePath({ node, getNode, basePath: `pages` });
     createNodeField({
@@ -846,17 +876,21 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
 ```
 
 ### Modifying pages created by core or plugins
+
 Gatsby core and plugins can automatically create pages for you. Sometimes the default isn’t quite what you want and you need to modify the created page objects.
 
 #### Removing trailing slashes
+
 A common reason for needing to modify automatically created pages is to remove trailing slashes. (Note: There’s also a plugin that will remove all trailing slashes from pages automatically: gatsby-plugin-remove-trailing-slashes.)
 
 #### Pass context to pages
+
 The automatically created pages can receive context and use that as variables in their GraphQL queries. To override the default and pass your own context, open your site’s gatsby-node.js and add similar to the following:
+
 ```js
 exports.onCreatePage = ({ page, actions }) => {
-  const { createPage, deletePage } = actions
-  deletePage(page)
+  const { createPage, deletePage } = actions;
+  deletePage(page);
   // You can access the variable "house" in your page queries now
   createPage({
     ...page,
@@ -864,45 +898,50 @@ exports.onCreatePage = ({ page, actions }) => {
       ...page.context,
       house: `Gryffindor`,
     },
-  })
-}
+  });
+};
 ```
 
 On your pages and templates, you can access your context via the prop pageContext like this:
-```jsx
-import React from "react"
-const Page = ({ pageContext }) => {
-  return <div>{pageContext.house}</div>
-}
-export default Page
-```
-Page context is serialized before being passed to pages: This means it can’t be used to pass functions into components.
 
+```jsx
+import React from "react";
+const Page = ({ pageContext }) => {
+  return <div>{pageContext.house}</div>;
+};
+export default Page;
+```
+
+Page context is serialized before being passed to pages: This means it can’t be used to pass functions into components.
 
 ## 5 Querying data in pages with graphQL
 
 Gatsby’s graphql tag enables page components to retrieve data via a GraphQL query.
 
 ### How to use the `graphql` tag in pages
+
 #### Add description to siteMetadata
+
 ```js
 module.exports = {
   siteMetadata: {
     title: "My Homepage",
     description: "This is where I write my thoughts.",
   },
-}
+};
 
 // src/pages/index.js
-import React from "react"
+import React from "react";
 const HomePage = () => {
-  return <div>Hello!</div>
-}
-export default HomePage
+  return <div>Hello!</div>;
+};
+export default HomePage;
 ```
 
 #### Add the graphql query
+
 Below our HomePage component declaration, export a new constant called `query`, and set its value to be a graphql tagged template with the query between two backticks:
+
 ```js
 export const query = graphql`
   query HomePageQuery {
@@ -912,23 +951,25 @@ export const query = graphql`
       }
     }
   }
-`
+`;
 ```
 
 #### Provide data to the component
+
 ```js
-const HomePage = ({data}) => {
-  return <div>{data.site.siteMetadata.description}</div>
-}
+const HomePage = ({ data }) => {
+  return <div>{data.site.siteMetadata.description}</div>;
+};
 ```
 
 ## 6. Querying data in components using StaticQuery
 
 Gatsby v2 introduces `StaticQuery`, a new API that allows components to retrieve data via GraphQL query.
+
 ```js
 // src/components/header.js
-import React from "react"
-import { StaticQuery, graphql } from "gatsby"
+import React from "react";
+import { StaticQuery, graphql } from "gatsby";
 export default () => (
   <StaticQuery
     query={graphql`
@@ -946,23 +987,25 @@ export default () => (
       </header>
     )}
   />
-)
+);
 ```
+
 **Using `StaticQuery`, you can colocate a component with its data. No longer is it required to, say, pass data down from Layout to Header.**
 
 ### typechecking
 
 With the above pattern, you lose the ability to typecheck with PropTypes. To regain typechecking while achieving the same result, you can change the component to:
+
 ```js
-import React from "react"
-import { StaticQuery, graphql } from "gatsby"
-import PropTypes from "prop-types"
+import React from "react";
+import { StaticQuery, graphql } from "gatsby";
+import PropTypes from "prop-types";
 
 const Header = ({ data }) => (
   <header>
     <h1>{data.site.siteMetadata.title}</h1>
   </header>
-)
+);
 
 export default props => (
   <StaticQuery
@@ -975,9 +1018,9 @@ export default props => (
         }
       }
     `}
-    render={ data => <Header data={data} {...props} /> }
+    render={data => <Header data={data} {...props} />}
   />
-)
+);
 
 Header.propTypes = {
   data: PropTypes.shape({
@@ -987,14 +1030,16 @@ Header.propTypes = {
       }).isRequired,
     }).isRequired,
   }).isRequired,
-}
+};
 ```
 
 ### How StaticQuery differs from page query
+
 StaticQuery can do most of the things that page query can, including fragments. The main differences are:
-* page queries can accept variables (via pageContext) but can only be added to page components
-* StaticQuery does not accept variables (hence the name “static”), but can be used in any component, including pages
-* StaticQuery does not work with raw React.createElement calls; please use JSX, e.g. <StaticQuery />
+
+- page queries can accept variables (via pageContext) but can only be added to page components
+- StaticQuery does not accept variables (hence the name “static”), but can be used in any component, including pages
+- StaticQuery does not work with raw React.createElement calls; please use JSX, e.g. <StaticQuery />
 
 ## 7. Querying data in components with the useStaticQuery hook
 
@@ -1004,11 +1049,12 @@ Gatsby v2.1.0 introduces useStaticQuery, a new Gatsby feature that provides the 
 # You’ll need React and ReactDOM 16.8.0 or later to use useStaticQuery
 npm install react@^16.8.0 react-dom@^16.8.0
 ```
+
 useStaticQuery is a React Hook. All the Rules of Hooks apply. **It takes your GraphQL query and returns the requested data.**
 
 ```js
-import React from "react"
-import { useStaticQuery, graphql } from "gatsby"
+import React from "react";
+import { useStaticQuery, graphql } from "gatsby";
 export default () => {
   const data = useStaticQuery(graphql`
     query HeaderQuery {
@@ -1018,20 +1064,21 @@ export default () => {
         }
       }
     }
-  `)
+  `);
   return (
     <header>
       <h1>{data.site.siteMetadata.title}</h1>
     </header>
-  )
-}
+  );
+};
 ```
 
 ### Composing custom `useStaticQuery` hooks
+
 One of the most compelling(강력한) features of hooks is the ability to compose and re-use these blocks of functionality. useStaticQuery is a hook. Therefore, **using useStaticQuery allows us to compose and re-use blocks of reusable functionality.** Perfect!
 
 ```js
-import { useStaticQuery, graphql } from "gatsby"
+import { useStaticQuery, graphql } from "gatsby";
 export const useSiteMetadata = () => {
   const { site } = useStaticQuery(
     graphql`
@@ -1050,14 +1097,15 @@ export const useSiteMetadata = () => {
         }
       }
     `
-  )
-  return site.siteMetadata
-}
+  );
+  return site.siteMetadata;
+};
 ```
 
 ### Known Limitations
-* `useStaticQuery` does not accept variables (hence the name “static”), but can be used in any component, including pages
-* Because of how queries currently work in Gatsby, we support only a single instance of useStaticQuery in a file
+
+- `useStaticQuery` does not accept variables (hence the name “static”), but can be used in any component, including pages
+- Because of how queries currently work in Gatsby, we support only a single instance of useStaticQuery in a file
 
 ## 8. Using fragments
 
@@ -1071,14 +1119,15 @@ fragment FragmentName on TypeName {
   field2
 }
 ```
-* `FragmentName`: the name of the fragment that will be referenced later.
-* `TypeName`: the [GraphQL type](https://graphql.org/graphql-js/object-types/) of the object the fragment will be used on. This is important because you can only query for fields that actually exist on a given object.
-* The body of the query. You can define any fields with any level of nesting in here, the same that you would elsewhere in a GraphQL query
 
+- `FragmentName`: the name of the fragment that will be referenced later.
+- `TypeName`: the [GraphQL type](https://graphql.org/graphql-js/object-types/) of the object the fragment will be used on. This is important because you can only query for fields that actually exist on a given object.
+- The body of the query. You can define any fields with any level of nesting in here, the same that you would elsewhere in a GraphQL query
 
-### Creating and using a fragment 
+### Creating and using a fragment
 
 A fragment can be created inside any GraphQL query, but it’s good practice to create the query separately. More organization advice in the [Conceptual Guide](https://www.gatsbyjs.org/docs/querying-with-graphql/#fragments)
+
 ```jsx
 // src/components/IndexPost.jsx
 import React from "react"
@@ -1120,8 +1169,8 @@ export const query = graphql`
 `
 
 ```
-When compiling your site, Gatsby preprocesses all GraphQL queries it finds. Therefore, any file that gets included in your project can define a snippet. However, **only Pages can define GraphQL queries that actually return data. This is why we can define the fragment in the component file** - it doesn’t actually return any data directly.
 
+When compiling your site, Gatsby preprocesses all GraphQL queries it finds. Therefore, any file that gets included in your project can define a snippet. However, **only Pages can define GraphQL queries that actually return data. This is why we can define the fragment in the component file** - it doesn’t actually return any data directly.
 
 ## 9. Creating slugs for pages
 
@@ -1130,19 +1179,20 @@ npm install --save gatsby-source-filesystem
 ```
 
 Add your new slugs directly onto the `MarkdownRemark` nodes. Any data you add to nodes is available to query later with GraphQL. To do so, you’ll use a function passed to our API implementation called `createNodeField`. This function allows you to create additional fields on nodes created by other plugins.
+
 ```js
-const { createFilePath } = require(`gatsby-source-filesystem`)
+const { createFilePath } = require(`gatsby-source-filesystem`);
 exports.onCreateNode = ({ node, getNode, actions }) => {
-  const { createNodeField } = actions
+  const { createNodeField } = actions;
   if (node.internal.type === `MarkdownRemark`) {
-    const slug = createFilePath({ node, getNode, basePath: `pages` })
+    const slug = createFilePath({ node, getNode, basePath: `pages` });
     createNodeField({
       node,
       name: `slug`,
       value: slug,
-    })
+    });
   }
-}
+};
 ```
 
 ```
@@ -1161,7 +1211,7 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
 
 ## 10. Creating pages from data programatically
 
-Gatsby and its ecosystem of plugins provide all kinds of data through a GraphQL interface. 
+Gatsby and its ecosystem of plugins provide all kinds of data through a GraphQL interface.
 
 ### creating pages
 
@@ -1181,21 +1231,22 @@ exports.createPages = async function({ actions, graphql }) {
         }
       }
     }
-  `)
+  `);
   data.allMarkdownRemark.edges.forEach(edge => {
-    const slug = edge.node.fields.slug
+    const slug = edge.node.fields.slug;
     actions.createPage({
       path: slug,
       component: require.resolve(`./src/templates/blog-post.js`),
       context: { slug: slug },
-    })
-  })
-}
+    });
+  });
+};
 ```
 
 For each page we want to create **we must specify the `path` for visiting that page, the component template used to render that page, and any context we need in the component for rendering.**
 
-**The `context` parameter is optional**, though often times it will include a unique identifier that can be used to query for associated data that will be rendered to the page. **All context values are made available to a template’s GraphQL queries as arguments prefaced with $**, so from our example above the slug property will become the $slug argument in our page query:
+**The `context` parameter is optional**, though often times it will include a unique identifier that can be used to query for associated data that will be rendered to the page. **All context values are made available to a template’s GraphQL queries as arguments prefaced with \$**, so from our example above the slug property will become the \$slug argument in our page query:
+
 ```js
 export const query = graphql`
   query($slug: String!) {
@@ -1206,12 +1257,13 @@ export const query = graphql`
 ### Specifying a template
 
 The `createPage` action required that we specify the component template that will be used to render the page.
+
 ```js
-import React from "react"
-import { graphql } from "gatsby"
-import Layout from "../components/layout"
+import React from "react";
+import { graphql } from "gatsby";
+import Layout from "../components/layout";
 export default ({ data }) => {
-  const post = data.markdownRemark
+  const post = data.markdownRemark;
   return (
     <Layout>
       <div>
@@ -1219,8 +1271,8 @@ export default ({ data }) => {
         <div dangerouslySetInnerHTML={{ __html: post.html }} />
       </div>
     </Layout>
-  )
-}
+  );
+};
 export const query = graphql`
   query($slug: String!) {
     markdownRemark(fields: { slug: { eq: $slug } }) {
@@ -1230,12 +1282,12 @@ export const query = graphql`
       }
     }
   }
-`
+`;
 ```
-Notice that **we’re able to query with the $slug value from our context as an argument, which ensures that we’re returning only the data that matches that specific page.** As a result we can provide the title and html from the matching markdownRemark record to our component. The context values are also available as the pageContext prop in the template component itself.
+
+Notice that **we’re able to query with the \$slug value from our context as an argument, which ensures that we’re returning only the data that matches that specific page.** As a result we can provide the title and html from the matching markdownRemark record to our component. The context values are also available as the pageContext prop in the template component itself.
 
 The `gatsby-transformer-remark` plugin is just one of a multitude of **Gatsby plugins that can provide data through the GraphQL interface. Any of that data can be used to programmatically create pages.**
-
 
 ## 11. Using third-party GraphQL APIs
 
@@ -1262,9 +1314,11 @@ module.exports = {
       },
     },
   ],
-}
+};
 ```
+
 See all configuration options in the [plugin docs](https://www.gatsbyjs.org/packages/gatsby-source-graphql). Third-party APIs will be available under the `fieldName` specified, so you can query through it normally.
+
 ```bash
 {
   # Field name parameter defines how you can access a third-party API
@@ -1296,7 +1350,7 @@ You can also create pages dynamically by adding a `createPages` callback in `gat
 ```js
 // gatsby-node.js
 
-const path = require(`path`)
+const path = require(`path`);
 exports.createPages = async ({ actions, graphql }) => {
   const { data } = await graphql(`
     query {
@@ -1307,7 +1361,7 @@ exports.createPages = async ({ actions, graphql }) => {
         }
       }
     }
-  `)
+  `);
   data.swapi.allSpecies.forEach(({ id, name }) => {
     actions.createPage({
       path: name,
@@ -1315,20 +1369,20 @@ exports.createPages = async ({ actions, graphql }) => {
       context: {
         speciesId: id,
       },
-    })
-  })
-}
+    });
+  });
+};
 ```
 
 ## 12. Adding Markdown Pages
 
 Gatsby can use Markdown files to create pages in your site. You add plugins to read and understand folders with Markdown files and from them create pages automatically. Here are the steps Gatsby follows for making this happen.
+
 1. Read files into Gatsby from the filesystem
 2. Transform Markdown to HTML and `frontmatter` to data
 3. Add a Markdown file
 4. Create a page component for the Markdown files
 5. Create static pages using Gatsby’s Node.js `createPage` API
-
 
 ### Read files into Gatsby from the filesystem
 
@@ -1337,6 +1391,7 @@ npm install --save gatsby-source-filesystem
 ```
 
 Open gatsby-config.js to add the `gatsby-source-filesystem` plugin. Now pass the object from the next block to the `plugins` array. By passing an object that includes the key path, you set the file system path.
+
 ```js
 plugins: [
   {
@@ -1346,19 +1401,21 @@ plugins: [
       path: `${__dirname}/src/markdown-pages`,
     },
   },
-]
+];
 ```
-Completing the above step means that you’ve “sourced” the Markdown files from the filesystem. You can now “transform” the Markdown to HTML and the YAML frontmatter to JSON.
 
+Completing the above step means that you’ve “sourced” the Markdown files from the filesystem. You can now “transform” the Markdown to HTML and the YAML frontmatter to JSON.
 
 ### Transform Markdown to HTML and frontmatter to data using `gatsby-transformer-remark`
 
 You’ll **use the plugin gatsby-transformer-remark to recognize files which are Markdown and read their content.** The plugin will convert the frontmatter metadata part of your Markdown files as frontmatter and the content part as HTML.
+
 ```bash
 npm install --save gatsby-transformer-remark
 ```
 
 Add this to gatsby-config.js after the previously added gatsby-source-filesystem.
+
 ```js
 plugins: [
   {
@@ -1369,10 +1426,11 @@ plugins: [
     },
   },
   `gatsby-transformer-remark`,
-]
+];
 ```
 
 ### add a Markdown file
+
 When you create a Markdown file, yo**u can include a set of key value pairs that can be used to provide additional data relevant to specific pages in the GraphQL data layer. This data is called frontmatter** and is denoted by the triple dashes at the start and end of the block. This block will be parsed by `gatsby-transformer-remark` as `frontmatter`. The GraphQL API will provide the key value pairs as data in our React components.
 
 ```md
@@ -1382,19 +1440,21 @@ date: "2019-05-04"
 title: "My first blog post"
 ---
 ```
+
 What is important in this step is the key pair `path`. The value that is assigned to the key path is used in order to navigate to your post.
 
 ### Create a page template for the Markdown files
 
 Create a folder in the /src directory of your Gatsby application called templates. Now create a blogTemplate.js inside it with the following content:
+
 ```js
-import React from "react"
-import { graphql } from "gatsby"
+import React from "react";
+import { graphql } from "gatsby";
 export default function Template({
   data, // this prop will be injected by the GraphQL query below.
 }) {
-  const { markdownRemark } = data // data.markdownRemark holds our post data
-  const { frontmatter, html } = markdownRemark
+  const { markdownRemark } = data; // data.markdownRemark holds our post data
+  const { frontmatter, html } = markdownRemark;
   return (
     <div className="blog-post-container">
       <div className="blog-post">
@@ -1406,7 +1466,7 @@ export default function Template({
         />
       </div>
     </div>
-  )
+  );
 }
 export const pageQuery = graphql`
   query($path: String!) {
@@ -1419,21 +1479,23 @@ export const pageQuery = graphql`
       }
     }
   }
-`
+`;
 ```
 
 Two things are important in the file above:
+
 1. A GraphQL query is made in the second half of the file to get the Markdown data. Gatsby has automagically given you all the Markdown metadata and HTML in this query’s result.
 2. The result of the query is injected by Gatsby into the Template component as data. markdownRemark is the property that you’ll find has all the details of the Markdown file. You can use that to construct a template for our blog post view. Since it’s a React component, you could style it with any of the recommended styling systems in Gatsby.
 
 ### Create static pages using Gatsby’s Node.js `createPage` API
 
 Use the `graphql` to query Markdown file data as below. Next, use the `createPage` action creator to create a page for each of the Markdown files using the `blogTemplate.js` you created in the previous step.
+
 ```js
-const path = require(`path`)
+const path = require(`path`);
 exports.createPages = async ({ actions, graphql, reporter }) => {
-  const { createPage } = actions
-  const blogPostTemplate = path.resolve(`src/templates/blogTemplate.js`)
+  const { createPage } = actions;
+  const blogPostTemplate = path.resolve(`src/templates/blogTemplate.js`);
   const result = await graphql(`
     {
       allMarkdownRemark(
@@ -1449,40 +1511,43 @@ exports.createPages = async ({ actions, graphql, reporter }) => {
         }
       }
     }
-  `)
+  `);
   // Handle errors
   if (result.errors) {
-    reporter.panicOnBuild(`Error while running GraphQL query.`)
-    return
+    reporter.panicOnBuild(`Error while running GraphQL query.`);
+    return;
   }
   result.data.allMarkdownRemark.edges.forEach(({ node }) => {
     createPage({
       path: node.frontmatter.path,
       component: blogPostTemplate,
       context: {}, // additional data can be passed via context
-    })
-  })
-}
+    });
+  });
+};
 ```
 
 ## 13. Adding a List of Markdown Blog Posts
 
 As described previous section, you will have to create your posts in Markdown files which will look like this:
+
 ```md
 ---
 path: "/blog/my-first-post"
 date: "2017-11-07"
 title: "My first blog post"
 ---
+
 Has anyone heard about GatsbyJS yet?
 ```
 
 ### Creating the page
 
 The first step will be to create the page which will display your posts, in src/pages/. You can for example use index.js.
+
 ```js
-import React from "react"
-import PostLink from "../components/post-link"
+import React from "react";
+import PostLink from "../components/post-link";
 const IndexPage = ({
   data: {
     allMarkdownRemark: { edges },
@@ -1490,17 +1555,18 @@ const IndexPage = ({
 }) => {
   const Posts = edges
     .filter(edge => !!edge.node.frontmatter.date) // You can filter your posts based on some criteria
-    .map(edge => <PostLink key={edge.node.id} post={edge.node} />)
-  return <div>{Posts}</div>
-}
-export default IndexPage
+    .map(edge => <PostLink key={edge.node.id} post={edge.node} />);
+  return <div>{Posts}</div>;
+};
+export default IndexPage;
 ```
 
 ### Creating the GraphQl Query
+
 ```js
-import React from "react"
-import { graphql } from "gatsby"
-import PostLink from "../components/post-link"
+import React from "react";
+import { graphql } from "gatsby";
+import PostLink from "../components/post-link";
 const IndexPage = ({
   data: {
     allMarkdownRemark: { edges },
@@ -1508,10 +1574,10 @@ const IndexPage = ({
 }) => {
   const Posts = edges
     .filter(edge => !!edge.node.frontmatter.date) // You can filter your posts based on some criteria
-    .map(edge => <PostLink key={edge.node.id} post={edge.node} />)
-  return <div>{Posts}</div>
-}
-export default IndexPage
+    .map(edge => <PostLink key={edge.node.id} post={edge.node} />);
+  return <div>{Posts}</div>;
+};
+export default IndexPage;
 export const pageQuery = graphql`
   query {
     allMarkdownRemark(sort: { order: DESC, fields: [frontmatter___date] }) {
@@ -1528,24 +1594,36 @@ export const pageQuery = graphql`
       }
     }
   }
-`
+`;
 ```
 
 ### Creating the PostLink componetn
+
 ```js
-import React from "react"
-import { Link } from "gatsby"
+import React from "react";
+import { Link } from "gatsby";
 const PostLink = ({ post }) => (
   <div>
     <Link to={post.frontmatter.path}>
       {post.frontmatter.title} ({post.frontmatter.date})
     </Link>
   </div>
-)
-export default PostLink
+);
+export default PostLink;
 ```
+
 This should get you a page with your posts sorted by descending date. You can further customize the frontmatter and the page and PostLink components to get your desired effects!
+
+## 14. Using the GraphQL Playground
+
+An alternative to the current IDE for your GraphQL queries: [GraphQL Playground](https://github.com/prisma/graphql-playground). To access this experimental feature utilizing GraphQL Playground with Gatsby, add GATSBY_GRAPHQL_IDE to your develop script in your package.json, like this:
+
+```js
+"develop": "GATSBY_GRAPHQL_IDE=playground gatsby develop",
+```
+
+To still be able to use `gatsby develop` you would require the dotenv package to your gatsby-config.js file and add an [environment variable](https://www.gatsbyjs.org/docs/environment-variables/) file, typically called `.env.development`. Finally, add `GATSBY_GRAPHQL_IDE=playground` to the `.env.development` file.
 
 ## Reference
 
-* [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
+- [https://www.gatsbyjs.org/docs/graphql/](https://www.gatsbyjs.org/docs/graphql/)
